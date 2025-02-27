@@ -21,7 +21,7 @@ void Module::forward(std::vector<float> X) {
       clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                      X.size() * sizeof(float), X.data(), nullptr);
 
-  for (FC &layer : fullyConnectedLayers) { // Iterate by reference!
+  for (FC &layer : fullyConnectedLayers) {
     size_t global_work_size[2] = {layer.batch_size, layer.out_features};
     layer.getKernel(context, platform, device);
     layer.getWeightBuffers(context);
