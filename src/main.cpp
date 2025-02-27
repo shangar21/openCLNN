@@ -27,21 +27,20 @@ int main() {
 
   std::vector<float> X = {1, 2, 3, 4, 5, 6};             // Shape: (3,2)
   std::vector<float> W = {1, 0, 0, 1, 1, 1};             // Shape: (2,3)
-  std::vector<float> Y(batch_size * out_features, 0.0f); // Output shape: (2,2)
-                                                         //
+
   Module module;
   FC layer1(in_features, out_features, batch_size);
   std::cout << layer1 << std::endl;
   module.addLayer(std::move(layer1));
+	FC layer2(out_features, 1, batch_size);
+	std::cout << layer2 << std::endl;
+	module.addLayer(std::move(layer2));
   module.forward(X);
-  std::cout << "HERE\n";
   std::cout << "Output Matrix Y:\n";
-  for (int i = 0; i < batch_size; ++i) {
-    for (int j = 0; j < out_features; ++j) {
-      std::cout << module.Y[i * out_features + j] << " ";
-    }
-    std::cout << "\n";
-  }
+	for (auto& i : module.Y){
+		std::cout << i << std::endl;
+	}
+  
 
   // Cleanup
   return 0;

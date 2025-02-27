@@ -11,10 +11,10 @@ public:
   const int in_features = 0;
   const int out_features = 0;
   const int batch_size = 1;
-  cl_kernel kernel;
+  cl_kernel kernel = nullptr;
   std::vector<float> W;
-  cl_mem Y_buf;
-  std::vector<cl_mem> weightBuffers;
+  cl_mem Y_buf = nullptr;
+  cl_mem weightBuffer = nullptr;
 
   FC(int in, int out, int batch_size = 1, bool randomize = true);
   ~FC();
