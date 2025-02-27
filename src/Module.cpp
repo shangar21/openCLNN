@@ -17,8 +17,9 @@ void Module::addLayer(FC &&fc) {
 }
 
 void Module::forward(std::vector<float> X) {
-  cl_mem X_buf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                X.size() * sizeof(float), X.data(), nullptr);
+  cl_mem X_buf =
+      clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                     X.size() * sizeof(float), X.data(), nullptr);
 
   for (FC &layer : fullyConnectedLayers) { // Iterate by reference!
     size_t global_work_size[2] = {layer.batch_size, layer.out_features};
@@ -27,24 +28,29 @@ void Module::forward(std::vector<float> X) {
     layer.setKernelArg(X_buf, context);
 
     checkErr(clEnqueueNDRangeKernel(queue, layer.kernel, 2, nullptr,
-                                    global_work_size, nullptr, 0, nullptr, nullptr),
+                                    global_work_size, nullptr, 0, nullptr,
+                                    nullptr),
              "Enqueue Kernel");
-    clFinish(queue); 
+    clFinish(queue);
 
     int outSize = layer.batch_size * layer.out_features;
-		Y.clear(); Y.resize(outSize);
+    Y.clear();
+    Y.resize(outSize);
     checkErr(clEnqueueReadBuffer(queue, layer.Y_buf, CL_TRUE, 0,
-                                 outSize * sizeof(float), Y.data(), 0, nullptr, nullptr),
+                                 outSize * sizeof(float), Y.data(), 0, nullptr,
+                                 nullptr),
              "Read Output Buffer");
 
     if (X_buf != layer.Y_buf) {
-      if (X_buf) clReleaseMemObject(X_buf);
+      if (X_buf)
+        clReleaseMemObject(X_buf);
       X_buf = layer.Y_buf;
-      clRetainMemObject(X_buf); 
+      clRetainMemObject(X_buf);
     }
   }
 
-  if (X_buf) clReleaseMemObject(X_buf);
+  if (X_buf)
+    clReleaseMemObject(X_buf);
 }
 
 std::vector<float> Module::getOutput() {
