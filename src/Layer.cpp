@@ -6,7 +6,8 @@ cl_program Layer::getProgram(cl_context ctx) {
   return clCreateProgramWithSource(ctx, 1, &code, &size, nullptr);
 }
 
-cl_kernel Layer::getKernel(cl_context ctx, cl_platform_id, cl_device_id device) {
+cl_kernel Layer::getKernel(cl_context ctx, cl_platform_id,
+                           cl_device_id device) {
   program = getProgram(ctx);
   cl_int err = clBuildProgram(program, 1, &device, nullptr, nullptr, nullptr);
   checkErr(err, "Failed to build program");

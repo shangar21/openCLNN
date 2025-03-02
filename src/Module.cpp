@@ -22,7 +22,7 @@ void Module::forward(std::vector<float> X) {
                      X.size() * sizeof(float), X.data(), nullptr);
 
   for (std::shared_ptr<Layer> &layer : fullyConnectedLayers) {
-		std::cout << layer->name << std::endl;
+    std::cout << layer->name << std::endl;
     size_t global_work_size[2] = {layer->batch_size, layer->out_features};
     layer->getKernel(context, platform, device);
     layer->setKernelArg(X_buf, context);
@@ -55,7 +55,7 @@ void Module::forward(std::vector<float> X) {
 
 std::vector<float> Module::getOutput() {
   std::vector<float> out;
-	std::shared_ptr<Layer> lastLayer = fullyConnectedLayers.back();
+  std::shared_ptr<Layer> lastLayer = fullyConnectedLayers.back();
   int outSize = lastLayer->batch_size * lastLayer->out_features;
   checkErr(clEnqueueReadBuffer(queue, Y_buf, CL_TRUE, 0,
                                outSize * sizeof(float), out.data(), 0, nullptr,

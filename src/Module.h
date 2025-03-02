@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Layer.h"
 #include "FC.h"
 #include "KernelUtils.h"
+#include "Layer.h"
 #include <memory>
 
 class Module {

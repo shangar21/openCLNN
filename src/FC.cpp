@@ -1,11 +1,11 @@
 #include "FC.h"
 
-FC::FC(int in, int out, int batch, bool randomize){
-	in_features = in;
-	out_features = out;
-	batch_size = batch;
-	source = readKernelFile("FC.cl");
-	name = "FC";
+FC::FC(int in, int out, int batch, bool randomize) {
+  in_features = in;
+  out_features = out;
+  batch_size = batch;
+  source = readKernelFile("FC.cl");
+  name = "FC";
   for (int i = 0; i < in * out; i++) {
     if (randomize)
       W.push_back((float)rand() / (float)RAND_MAX);
@@ -23,7 +23,7 @@ void FC::getWeightBuffers(cl_context ctx) {
 }
 
 void FC::setKernelArg(cl_mem &X_buf, cl_context ctx) {
-	getWeightBuffers(ctx);
+  getWeightBuffers(ctx);
   clSetKernelArg(kernel, 0, sizeof(cl_mem), &X_buf);
   clSetKernelArg(kernel, 1, sizeof(cl_mem), &weightBuffer);
   clSetKernelArg(kernel, 2, sizeof(cl_mem), &Y_buf);
