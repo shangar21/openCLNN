@@ -6,11 +6,14 @@ Sigmoid::Sigmoid(int in, int batch) {
   batch_size = batch;
   source = readKernelFile("Sigmoid.cl");
   name = "Sigmoid";
+  launchConfig[0] = batch;
+  launchConfig[1] = in;
 }
 
 Sigmoid::~Sigmoid() {}
 
-void Sigmoid::setKernelArg(cl_mem &X_buf, cl_context ctx) {
+void Sigmoid::setKernelArg(cl_mem &X_buf, cl_context ctx,
+                           const cl_mem &gt_buf) {
   clSetKernelArg(kernel, 0, sizeof(cl_mem), &X_buf);
   clSetKernelArg(kernel, 1, sizeof(cl_mem), &Y_buf);
   clSetKernelArg(kernel, 2, sizeof(int), &batch_size);

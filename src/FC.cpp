@@ -6,6 +6,8 @@ FC::FC(int in, int out, int batch, bool randomize) {
   batch_size = batch;
   source = readKernelFile("FC.cl");
   name = "FC";
+  launchConfig[0] = batch;
+  launchConfig[1] = out;
   for (int i = 0; i < in * out; i++) {
     if (randomize)
       W.push_back((float)rand() / (float)RAND_MAX);
@@ -22,7 +24,7 @@ void FC::getWeightBuffers(cl_context ctx) {
                                   W.size() * sizeof(float), W.data(), nullptr);
 }
 
-void FC::setKernelArg(cl_mem &X_buf, cl_context ctx) {
+void FC::setKernelArg(cl_mem &X_buf, cl_context ctx, const cl_mem &gt_buf) {
   getWeightBuffers(ctx);
   clSetKernelArg(kernel, 0, sizeof(cl_mem), &X_buf);
   clSetKernelArg(kernel, 1, sizeof(cl_mem), &weightBuffer);

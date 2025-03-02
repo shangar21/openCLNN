@@ -2,6 +2,7 @@
 
 #include "FC.h"
 #include "KernelUtils.h"
+#include "MSE.h"
 #include "Module.h"
 #include "Sigmoid.h"
 #include <CL/cl.h>
@@ -28,6 +29,7 @@ int main() {
   const int out_features = 2;
 
   std::vector<float> X = {1, 2, 3, 4, 5, 6}; // Shape: (3,2)
+  std::vector<float> gts = {1, 0, 0, 1};
 
   Module module;
 
@@ -37,10 +39,20 @@ int main() {
   Sigmoid layer2(out_features, batch_size);
   module.addLayer(std::make_shared<Sigmoid>(layer2));
 
+  MSE lossFunc(out_features, batch_size);
+  module.setLoss(std::make_shared<MSE>(lossFunc));
+
   module.forward(X);
 
   std::cout << "Output Matrix Y:\n";
   for (auto &i : module.Y) {
+    std::cout << i << std::endl;
+  }
+
+  module.loss(gts);
+
+  std::cout << "Loss Value Y:\n";
+  for (auto &i : module.lossVals) {
     std::cout << i << std::endl;
   }
 

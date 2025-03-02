@@ -16,19 +16,18 @@ void Module::addLayer(std::shared_ptr<Layer> layer) {
   fullyConnectedLayers.push_back(layer);
 }
 
+void Module::setLoss(std::shared_ptr<Layer> loss) { lossFunction = loss; }
+
 void Module::forward(std::vector<float> X) {
   cl_mem X_buf =
       clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                      X.size() * sizeof(float), X.data(), nullptr);
 
   for (std::shared_ptr<Layer> &layer : fullyConnectedLayers) {
-    std::cout << layer->name << std::endl;
-    size_t global_work_size[2] = {layer->batch_size, layer->out_features};
     layer->getKernel(context, platform, device);
     layer->setKernelArg(X_buf, context);
-
     checkErr(clEnqueueNDRangeKernel(queue, layer->kernel, 2, nullptr,
-                                    global_work_size, nullptr, 0, nullptr,
+                                    layer->launchConfig, nullptr, 0, nullptr,
                                     nullptr),
              "Enqueue Kernel");
     clFinish(queue);
@@ -51,6 +50,35 @@ void Module::forward(std::vector<float> X) {
 
   if (X_buf)
     clReleaseMemObject(X_buf);
+}
+
+void Module::loss(std::vector<float> gts) {
+  cl_int err;
+  cl_mem gt_buf =
+      clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                     gts.size() * sizeof(float), gts.data(), &err);
+  checkErr(err, "Set GT buffer");
+  cl_mem X_buf =
+      clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                     Y.size() * sizeof(float), Y.data(), &err);
+  checkErr(err, "Set Output buffer");
+  lossFunction->getKernel(context, platform, device);
+  lossFunction->setKernelArg(X_buf, context, gt_buf);
+  checkErr(clEnqueueNDRangeKernel(queue, lossFunction->kernel, 2, nullptr,
+                                  lossFunction->launchConfig, nullptr, 0,
+                                  nullptr, nullptr),
+           "Enqeue Loss Kernel");
+  int outSize = lossFunction->batch_size * lossFunction->out_features;
+  lossVals.clear();
+  lossVals.resize(outSize);
+  checkErr(clEnqueueReadBuffer(queue, lossFunction->Y_buf, CL_TRUE, 0,
+                               outSize * sizeof(float), lossVals.data(), 0,
+                               nullptr, nullptr),
+           "Read Loss Output Buffer");
+  if (X_buf)
+    clReleaseMemObject(X_buf);
+  if (gt_buf)
+    clReleaseMemObject(gt_buf);
 }
 
 std::vector<float> Module::getOutput() {

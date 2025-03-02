@@ -20,6 +20,7 @@ set(
 		src/Module.cpp
 		src/Layer.cpp
 		src/Sigmoid.cpp
+		src/MSE.cpp
 )
 
 add_library(openCLNNLib ${SOURCES})
