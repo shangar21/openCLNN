@@ -1,12 +1,14 @@
 #define CL_TARGET_OPENCL_VERSION 220
 
 #include "FC.h"
+#include "Sigmoid.h"
 #include "KernelUtils.h"
 #include "Module.h"
 #include <CL/cl.h>
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 const char *kernel_filename =
     "/home/shangar21/Documents/openCLNN/kernels/FC.cl";
@@ -29,13 +31,15 @@ int main() {
   std::vector<float> W = {1, 0, 0, 1, 1, 1};             // Shape: (2,3)
 
   Module module;
+
   FC layer1(in_features, out_features, batch_size);
-  std::cout << layer1 << std::endl;
-  module.addLayer(std::move(layer1));
-	FC layer2(out_features, 1, batch_size);
-	std::cout << layer2 << std::endl;
-	module.addLayer(std::move(layer2));
+  module.addLayer(std::make_shared<FC>(layer1));
+
+	Sigmoid layer2(out_features, batch_size);
+	module.addLayer(std::make_shared<Sigmoid>(layer2));
+
   module.forward(X);
+
   std::cout << "Output Matrix Y:\n";
 	for (auto& i : module.Y){
 		std::cout << i << std::endl;

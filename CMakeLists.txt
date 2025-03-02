@@ -18,6 +18,8 @@ set(
 		src/FC.cpp
 		src/KernelUtils.cpp
 		src/Module.cpp
+		src/Layer.cpp
+		src/Sigmoid.cpp
 )
 
 add_library(openCLNNLib ${SOURCES})
