@@ -34,14 +34,6 @@ void Module::forward(std::vector<float> X) {
 
     clRetainMemObject(layer->Y_buf);
 
-    int outSize = layer->batch_size * layer->out_features;
-    Y.clear();
-    Y.resize(outSize);
-    checkErr(clEnqueueReadBuffer(queue, layer->Y_buf, CL_TRUE, 0,
-                                 outSize * sizeof(float), Y.data(), 0, nullptr,
-                                 nullptr),
-             "Read Output Buffer");
-
     if (X_buf != layer->Y_buf) {
       if (X_buf)
         clReleaseMemObject(X_buf);
@@ -55,6 +47,7 @@ void Module::forward(std::vector<float> X) {
 }
 
 void Module::loss(std::vector<float> gts) {
+  Y = getOutput();
   cl_int err;
   cl_mem gt_buf =
       clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
@@ -96,7 +89,7 @@ void Module::backwards() {
                                   lossFunction->launchConfig, nullptr, 0,
                                   nullptr, nullptr),
            "Enqueue Loss Kernel");
-	clFinish(queue);
+  clFinish(queue);
 
   for (std::shared_ptr<Layer> &layer :
        std::views::reverse(fullyConnectedLayers)) {
@@ -107,9 +100,11 @@ std::vector<float> Module::getOutput() {
   std::vector<float> out;
   std::shared_ptr<Layer> lastLayer = fullyConnectedLayers.back();
   int outSize = lastLayer->batch_size * lastLayer->out_features;
-  checkErr(clEnqueueReadBuffer(queue, Y_buf, CL_TRUE, 0,
+  out.resize(outSize);
+  checkErr(clEnqueueReadBuffer(queue, lastLayer->Y_buf, CL_TRUE, 0,
                                outSize * sizeof(float), out.data(), 0, nullptr,
                                nullptr),
            "Read Output Buffer");
+  clFinish(queue);
   return out;
 }

@@ -45,7 +45,7 @@ int main() {
   module.forward(X);
 
   std::cout << "Output Matrix Y:\n";
-  for (auto &i : module.Y) {
+  for (auto &i : module.getOutput()) {
     std::cout << i << std::endl;
   }
 
