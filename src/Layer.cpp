@@ -1,30 +1,30 @@
 #include "Layer.h"
 
-cl_program Layer::getProgram(cl_context ctx, bool backwards) {
+cl::Program Layer::getProgram(cl::Context ctx, bool backwards) {
   std::string s = backwards ? backwardsSource : source;
-  const char *code = s.c_str();
-  size_t size = s.size();
-  return clCreateProgramWithSource(ctx, 1, &code, &size, nullptr);
+  cl::Program::Sources sources;
+  sources.push_back({s.c_str(), s.length()});
+  return cl::Program(ctx, sources);
 }
 
-cl_kernel Layer::getKernel(cl_context ctx, cl_platform_id, cl_device_id device,
-                           bool backwards) {
-  cl_kernel &setKernel = backwards ? backwardsKernel : kernel;
+cl::Kernel Layer::getKernel(cl::Context ctx, cl::Platform, cl::Device device,
+                            bool backwards) {
+  cl::Kernel &setKernel = backwards ? backwardsKernel : kernel;
 
-  if (setKernel != nullptr)
+  if (setKernel())
     return setKernel;
 
   program = getProgram(ctx);
-  cl_int err = clBuildProgram(program, 1, &device, nullptr, nullptr, nullptr);
-  checkErr(err, "Failed to build program");
+  try {
+    program.build({device});
+  } catch (const cl::Error &err) {
+    checkErr(err, "Failed to build program");
+  }
 
-  setKernel = clCreateKernel(
-      program, backwards ? backwardsName.c_str() : name.c_str(), &err);
-  checkErr(err, "Failed to create kernel");
+  setKernel =
+      cl::Kernel(program, backwards ? backwardsName.c_str() : name.c_str());
 
-  Y_buf =
-      clCreateBuffer(ctx, CL_MEM_READ_WRITE,
-                     out_features * batch_size * sizeof(float), nullptr, &err);
-  checkErr(err, "Failed to create Y_buf");
+  Y_buf = cl::Buffer(ctx, CL_MEM_READ_WRITE,
+                     out_features * batch_size * sizeof(float));
   return setKernel;
 }

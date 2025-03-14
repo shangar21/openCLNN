@@ -1,11 +1,8 @@
-#define CL_TARGET_OPENCL_VERSION 220
-
+#include <CL/opencl.hpp>
 #include "FC.h"
-#include "KernelUtils.h"
 #include "MSE.h"
 #include "Module.h"
 #include "Sigmoid.h"
-#include <CL/cl.h>
 #include <fstream>
 #include <iostream>
 #include <memory>

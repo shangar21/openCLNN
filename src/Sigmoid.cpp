@@ -14,13 +14,13 @@ Sigmoid::Sigmoid(int in, int batch) {
 
 Sigmoid::~Sigmoid() {}
 
-void Sigmoid::setKernelArg(cl_mem &X_buf, cl_context ctx,
-                           const cl_mem &gt_buf) {
-  clSetKernelArg(kernel, 0, sizeof(cl_mem), &X_buf);
-  clSetKernelArg(kernel, 1, sizeof(cl_mem), &Y_buf);
-  clSetKernelArg(kernel, 2, sizeof(int), &batch_size);
-  clSetKernelArg(kernel, 3, sizeof(int), &in_features);
-  clSetKernelArg(kernel, 4, sizeof(int), &out_features);
+void Sigmoid::setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
+                           const cl::Buffer &gt_buf) {
+  kernel.setArg(0, X_buf);
+  kernel.setArg(1, Y_buf);
+  kernel.setArg(2, batch_size);
+  kernel.setArg(3, in_features);
+  kernel.setArg(4, out_features);
 }
 
-void Sigmoid::setBackwardsKernelArg(cl_mem &dLoss_buf, cl_context ctx){};
+void Sigmoid::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Context ctx){};
