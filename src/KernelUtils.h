@@ -1,6 +1,6 @@
 #pragma once
 
-#include <CL/cl.h>
+#include <CL/opencl.hpp>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -11,4 +11,4 @@
 #endif
 
 std::string readKernelFile(const std::string &filename);
-void checkErr(cl_int err, const char *operation);
+void checkErr(const cl::Error &err, const char *operation);

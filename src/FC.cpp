@@ -5,7 +5,9 @@ FC::FC(int in, int out, int batch, bool randomize) {
   out_features = out;
   batch_size = batch;
   source = readKernelFile("FC.cl");
+  backwardsSource = readKernelFile("FC_back.cl");
   name = "FC";
+  backwardsName = "FC_back";
   launchConfig[0] = batch;
   launchConfig[1] = out;
   for (int i = 0; i < in * out; i++) {
@@ -18,21 +20,23 @@ FC::FC(int in, int out, int batch, bool randomize) {
 
 FC::~FC() {}
 
-void FC::getWeightBuffers(cl_context ctx) {
-  if (!weightBuffer)
-    weightBuffer = clCreateBuffer(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                  W.size() * sizeof(float), W.data(), nullptr);
+void FC::getWeightBuffers(cl::Context ctx) {
+  if (!weightBuffer())
+    weightBuffer = cl::Buffer(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
+                                  W.size() * sizeof(float), W.data());
 }
 
-void FC::setKernelArg(cl_mem &X_buf, cl_context ctx, const cl_mem &gt_buf) {
+void FC::setKernelArg(cl::Buffer &X_buf, cl::Context ctx, const cl::Buffer &gt_buf) {
   getWeightBuffers(ctx);
-  clSetKernelArg(kernel, 0, sizeof(cl_mem), &X_buf);
-  clSetKernelArg(kernel, 1, sizeof(cl_mem), &weightBuffer);
-  clSetKernelArg(kernel, 2, sizeof(cl_mem), &Y_buf);
-  clSetKernelArg(kernel, 3, sizeof(int), &batch_size);
-  clSetKernelArg(kernel, 4, sizeof(int), &in_features);
-  clSetKernelArg(kernel, 5, sizeof(int), &out_features);
+  kernel.setArg(0, X_buf);
+  kernel.setArg(1, weightBuffer);
+  kernel.setArg(2, Y_buf);
+  kernel.setArg(3, batch_size);
+  kernel.setArg(4, in_features);
+  kernel.setArg(5, out_features);
 }
+
+void FC::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Context ctx){};
 
 std::ostream &operator<<(std::ostream &os, const FC &fc) {
   os << "Fully Connected Layer (" << fc.in_features << " X " << fc.out_features

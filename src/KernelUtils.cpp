@@ -10,9 +10,8 @@ std::string readKernelFile(const std::string &filename) {
   return ss.str();
 }
 
-void checkErr(cl_int err, const char *operation) {
-  if (err != CL_SUCCESS) {
-    std::cerr << "Error: " << operation << " (" << err << ")" << std::endl;
-    exit(1);
-  }
+void checkErr(const cl::Error &err, const char *operation) {
+  std::cerr << "Error during operation '" << operation << "': " << err.what()
+            << " (" << err.err() << ")" << std::endl;
+  exit(1);
 }
