@@ -4,6 +4,7 @@
 #include "KernelUtils.h"
 #include "Layer.h"
 #include <memory>
+#include <ranges>
 
 class Module {
 
@@ -27,5 +28,6 @@ public:
   void setLoss(std::shared_ptr<Layer> lossFunc);
   void forward(std::vector<float> X);
   void loss(std::vector<float> gts);
+  void backwards();
   std::vector<float> getOutput();
 };

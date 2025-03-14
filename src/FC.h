@@ -13,4 +13,5 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const FC &fc);
   void setKernelArg(cl_mem &X_buf, cl_context ctx,
                     const cl_mem &gt_buf = nullptr) override;
+  void setBackwardsKernelArg(cl_mem &dLoss_buf, cl_context ctx) override;
 };

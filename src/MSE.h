@@ -8,4 +8,5 @@ public:
   ~MSE();
   void setKernelArg(cl_mem &X_buf, cl_context ctx,
                     const cl_mem &Y_buf) override;
+  void setBackwardsKernelArg(cl_mem &dLoss_buf, cl_context ctx) override;
 };

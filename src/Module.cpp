@@ -32,6 +32,8 @@ void Module::forward(std::vector<float> X) {
              "Enqueue Kernel");
     clFinish(queue);
 
+    clRetainMemObject(layer->Y_buf);
+
     int outSize = layer->batch_size * layer->out_features;
     Y.clear();
     Y.resize(outSize);
@@ -79,6 +81,26 @@ void Module::loss(std::vector<float> gts) {
     clReleaseMemObject(X_buf);
   if (gt_buf)
     clReleaseMemObject(gt_buf);
+}
+
+void Module::backwards() {
+  // Getting loss gradient before propogating it back
+  cl_int err;
+  cl_mem dLoss_buf = clCreateBuffer(
+      context, CL_MEM_READ_WRITE,
+      fullyConnectedLayers[0]->batch_size * sizeof(float), nullptr, &err);
+  checkErr(err, "Set Loss Grad Buffer");
+  lossFunction->getKernel(context, platform, device, true);
+  lossFunction->setBackwardsKernelArg(dLoss_buf, context);
+  checkErr(clEnqueueNDRangeKernel(queue, lossFunction->kernel, 2, nullptr,
+                                  lossFunction->launchConfig, nullptr, 0,
+                                  nullptr, nullptr),
+           "Enqueue Loss Kernel");
+	clFinish(queue);
+
+  for (std::shared_ptr<Layer> &layer :
+       std::views::reverse(fullyConnectedLayers)) {
+  }
 }
 
 std::vector<float> Module::getOutput() {
