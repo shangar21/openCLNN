@@ -10,6 +10,7 @@ Sigmoid::Sigmoid(int in, int batch) {
   backwardsSource = "Sigmoid_back";
   launchConfig[0] = batch;
   launchConfig[1] = in;
+  backwardsLaunchConfig[0] = batch;
 }
 
 Sigmoid::~Sigmoid() {}
@@ -23,4 +24,5 @@ void Sigmoid::setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
   kernel.setArg(4, out_features);
 }
 
-void Sigmoid::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Context ctx){};
+void Sigmoid::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                                    cl::Context ctx){};

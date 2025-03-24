@@ -62,7 +62,7 @@ void Module::loss(std::vector<float> gts) {
   queue.enqueueNDRangeKernel(lossFunction->kernel, cl::NullRange,
                              cl::NDRange(lossFunction->launchConfig[0],
                                          lossFunction->launchConfig[1]));
-  int outSize = lossFunction->batch_size * lossFunction->out_features;
+  int outSize = lossFunction->batch_size;
   lossVals.clear();
   lossVals.resize(outSize);
   queue.enqueueReadBuffer(lossFunction->Y_buf, CL_TRUE, 0,
@@ -72,16 +72,29 @@ void Module::loss(std::vector<float> gts) {
 void Module::backwards() {
   cl::Buffer dLoss_buf(context, CL_MEM_READ_WRITE,
                        fullyConnectedLayers[0]->batch_size * sizeof(float));
+  cl::Buffer dX_buf(context, CL_MEM_READ_WRITE,
+                    fullyConnectedLayers[0]->batch_size * sizeof(float));
   lossFunction->getKernel(context, platform, device, true);
-  lossFunction->setBackwardsKernelArg(dLoss_buf, context);
+  lossFunction->setBackwardsKernelArg(dLoss_buf, dX_buf, context);
   queue.enqueueNDRangeKernel(lossFunction->kernel, cl::NullRange,
                              cl::NDRange(lossFunction->launchConfig[0],
                                          lossFunction->launchConfig[1]));
   queue.finish();
 
-  // for (auto it = fullyConnectedLayers.rbegin(); it !=
-  // fullyConnectedLayers.rend(); ++it) {
-  // }
+  for (auto it = fullyConnectedLayers.rbegin();
+       it != fullyConnectedLayers.rend(); ++it) {
+    std::shared_ptr<Layer> layer = *it;
+    layer->getKernel(context, platform, device, true);
+    layer->setBackwardsKernelArg(dLoss_buf, dX_buf, context);
+    queue.enqueueNDRangeKernel(layer->kernel, cl::NullRange,
+                               cl::NDRange(layer->backwardsLaunchConfig[0],
+                                           layer->backwardsLaunchConfig[1]));
+    queue.finish();
+    if (dLoss_buf != layer->dY_buf)
+      dLoss_buf = layer->dY_buf;
+    if (dX_buf != layer->dX_buf)
+      dX_buf = layer->dX_buf;
+  }
 }
 
 std::vector<float> Module::getOutput() {

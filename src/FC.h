@@ -5,7 +5,7 @@
 class FC : public Layer {
 public:
   std::vector<float> W;
-	cl::Buffer weightBuffer;
+  cl::Buffer weightBuffer;
 
   FC(int in, int out, int batch_size = 1, bool randomize = true);
   ~FC();
@@ -13,5 +13,6 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const FC &fc);
   void setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
                     const cl::Buffer &gt_buf = cl::Buffer()) override;
-  void setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Context ctx) override;
+  void setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                             cl::Context ctx) override;
 };

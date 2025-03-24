@@ -21,12 +21,14 @@ public:
   cl::Buffer dX_buf;
   cl::Program program;
   size_t launchConfig[2] = {0, 0};
+  size_t backwardsLaunchConfig[2] = {0, 0};
 
   virtual ~Layer() = default;
   virtual void setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
                             const cl::Buffer &gt_buf = cl::Buffer()) = 0;
-  virtual void setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Context ctx) = 0;
+  virtual void setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                                     cl::Context ctx) = 0;
   cl::Kernel getKernel(cl::Context ctx, cl::Platform platform,
-                      cl::Device device, bool backwards = false);
+                       cl::Device device, bool backwards = false);
   cl::Program getProgram(cl::Context ctx, bool backwards = false);
 };

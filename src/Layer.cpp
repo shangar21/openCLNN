@@ -16,9 +16,13 @@ cl::Kernel Layer::getKernel(cl::Context ctx, cl::Platform, cl::Device device,
 
   program = getProgram(ctx);
   try {
-    program.build({device});
-  } catch (const cl::Error &err) {
-    checkErr(err, "Failed to build program");
+    program.build(device);
+  } catch (cl::Error &err) {
+    std::string buildLog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+    std::cerr << "Build log for device " << device.getInfo<CL_DEVICE_NAME>()
+              << ":\n"
+              << buildLog << std::endl;
+    throw err;
   }
 
   setKernel =
