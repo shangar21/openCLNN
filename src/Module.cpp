@@ -50,13 +50,10 @@ void Module::forward(std::vector<float> X) {
 }
 
 void Module::loss(std::vector<float> gts) {
-  Y = getOutput();
   cl::Buffer gt_buf =
       cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                  gts.size() * sizeof(float), gts.data());
-  cl::Buffer X_buf =
-      cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                 Y.size() * sizeof(float), Y.data());
+  cl::Buffer X_buf = fullyConnectedLayers.back()->Y_buf;
   lossFunction->getKernel(context, platform, device);
   lossFunction->setKernelArg(X_buf, context, gt_buf);
   queue.enqueueNDRangeKernel(lossFunction->kernel, cl::NullRange,
