@@ -10,6 +10,7 @@ FC::FC(int in, int out, int batch, bool randomize) {
   backwardsName = "FC_back";
   launchConfig[0] = batch;
   launchConfig[1] = out;
+	backwardsLaunchConfig[0] = batch;
   for (int i = 0; i < in * out; i++) {
     if (randomize)
       W.push_back((float)rand() / (float)RAND_MAX);
@@ -23,10 +24,11 @@ FC::~FC() {}
 void FC::getWeightBuffers(cl::Context ctx) {
   if (!weightBuffer())
     weightBuffer = cl::Buffer(ctx, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
-                                  W.size() * sizeof(float), W.data());
+                              W.size() * sizeof(float), W.data());
 }
 
-void FC::setKernelArg(cl::Buffer &X_buf, cl::Context ctx, const cl::Buffer &gt_buf) {
+void FC::setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
+                      const cl::Buffer &gt_buf) {
   getWeightBuffers(ctx);
   kernel.setArg(0, X_buf);
   kernel.setArg(1, weightBuffer);
@@ -36,7 +38,8 @@ void FC::setKernelArg(cl::Buffer &X_buf, cl::Context ctx, const cl::Buffer &gt_b
   kernel.setArg(5, out_features);
 }
 
-void FC::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Context ctx){};
+void FC::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                               cl::Context ctx){};
 
 std::ostream &operator<<(std::ostream &os, const FC &fc) {
   os << "Fully Connected Layer (" << fc.in_features << " X " << fc.out_features

@@ -1,8 +1,9 @@
-#include <CL/opencl.hpp>
 #include "FC.h"
 #include "MSE.h"
 #include "Module.h"
+#include "Optimizer.h"
 #include "Sigmoid.h"
+#include <CL/opencl.hpp>
 #include <fstream>
 #include <iostream>
 #include <memory>

@@ -7,15 +7,17 @@ __kernel void MSE(
 	const int batch_size,
 	const int in_features
 ){
-	int batch = get_global_id(0); // sample
-	int feature = get_global_id(1); // features
+	int batch = get_global_id(0); // batch idx 
 	
-	if (batch >= batch_size || feature >= in_features) return;
+	if (batch >= batch_size) return;
 	
-	int idx = batch * in_features + feature;
-	
-	float sq_err = (Y[idx] - Y_hat[idx]) * (Y[idx] - Y_hat[idx]);
-	//atomic_add(&L[batch], sq_err);
-	L[batch] += sq_err;
-	
+	float sq_err = 0.0;
+
+	for(int idx = 0; idx < in_features; idx++){
+		float gt = Y[batch * in_features + idx];
+		float out = Y_hat[batch * in_features + idx];
+		sq_err += (gt - out) * (gt - out);
+	}
+
+	L[batch] = sq_err / (float)in_features;
 }

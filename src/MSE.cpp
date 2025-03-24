@@ -9,7 +9,8 @@ MSE::MSE(int in, int batch) {
   name = "MSE";
   backwardsName = "MSE_back";
   launchConfig[0] = batch;
-  launchConfig[1] = in;
+  launchConfig[1] = 1;
+	backwardsLaunchConfig[0] = batch;
 }
 
 MSE::~MSE() {}
@@ -23,4 +24,5 @@ void MSE::setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
   kernel.setArg(4, in_features);
 }
 
-void MSE::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Context ctx){};
+void MSE::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                                cl::Context ctx){};
