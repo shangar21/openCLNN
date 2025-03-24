@@ -37,7 +37,7 @@ void Module::forward(std::vector<float> X) {
                  X.size() * sizeof(float), X.data());
 
   for (std::shared_ptr<Layer> &layer : fullyConnectedLayers) {
-    layer->getKernel(context, platform, device);
+    layer->getForwardKernel(context, platform, device);
     layer->setKernelArg(X_buf, context);
     queue.enqueueNDRangeKernel(
         layer->kernel, cl::NullRange,
@@ -54,7 +54,7 @@ void Module::loss(std::vector<float> gts) {
       cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
                  gts.size() * sizeof(float), gts.data());
   cl::Buffer X_buf = fullyConnectedLayers.back()->Y_buf;
-  lossFunction->getKernel(context, platform, device);
+  lossFunction->getForwardKernel(context, platform, device);
   lossFunction->setKernelArg(X_buf, context, gt_buf);
   queue.enqueueNDRangeKernel(lossFunction->kernel, cl::NullRange,
                              cl::NDRange(lossFunction->launchConfig[0],
@@ -71,22 +71,42 @@ void Module::backwards() {
                        fullyConnectedLayers[0]->batch_size * sizeof(float));
   cl::Buffer dX_buf(context, CL_MEM_READ_WRITE,
                     fullyConnectedLayers[0]->batch_size * sizeof(float));
-  lossFunction->getKernel(context, platform, device, true);
-  lossFunction->setBackwardsKernelArg(dLoss_buf, dX_buf, context);
-  queue.enqueueNDRangeKernel(lossFunction->kernel, cl::NullRange,
-                             cl::NDRange(lossFunction->launchConfig[0],
-                                         lossFunction->launchConfig[1]));
+
+  lossFunction->getBackwardsInputKernel(context, platform, device);
+  lossFunction->setBackwardsInputKernelArg(dLoss_buf, dX_buf, context);
+  queue.enqueueNDRangeKernel(
+      lossFunction->backwardsInputKernel, cl::NullRange,
+      cl::NDRange(lossFunction->backwardsInputLaunchConfig[0],
+                  lossFunction->backwardsInputLaunchConfig[1]));
+
+  lossFunction->getBackwardsWeightKernel(context, platform, device);
+  lossFunction->setBackwardsWeightKernelArg(dLoss_buf, dX_buf, context);
+  queue.enqueueNDRangeKernel(
+      lossFunction->backwardsWeightKernel, cl::NullRange,
+      cl::NDRange(lossFunction->backwardsWeightLaunchConfig[0],
+                  lossFunction->backwardsWeightLaunchConfig[1]));
+
   queue.finish();
 
   for (auto it = fullyConnectedLayers.rbegin();
        it != fullyConnectedLayers.rend(); ++it) {
     std::shared_ptr<Layer> layer = *it;
-    layer->getKernel(context, platform, device, true);
-    layer->setBackwardsKernelArg(dLoss_buf, dX_buf, context);
-    queue.enqueueNDRangeKernel(layer->kernel, cl::NullRange,
-                               cl::NDRange(layer->backwardsLaunchConfig[0],
-                                           layer->backwardsLaunchConfig[1]));
+
+    layer->getBackwardsInputKernel(context, platform, device);
+    layer->setBackwardsInputKernelArg(dLoss_buf, dX_buf, context);
+    queue.enqueueNDRangeKernel(
+        layer->backwardsInputKernel, cl::NullRange,
+        cl::NDRange(layer->backwardsInputLaunchConfig[0],
+                    layer->backwardsInputLaunchConfig[1]));
+
+    layer->getBackwardsWeightKernel(context, platform, device);
+    layer->setBackwardsWeightKernelArg(dLoss_buf, dX_buf, context);
+    queue.enqueueNDRangeKernel(
+        layer->backwardsWeightKernel, cl::NullRange,
+        cl::NDRange(layer->backwardsWeightLaunchConfig[0],
+                    layer->backwardsWeightLaunchConfig[1]));
     queue.finish();
+
     if (dLoss_buf != layer->dY_buf)
       dLoss_buf = layer->dY_buf;
     if (dX_buf != layer->dX_buf)

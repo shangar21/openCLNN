@@ -5,12 +5,13 @@ Sigmoid::Sigmoid(int in, int batch) {
   out_features = in;
   batch_size = batch;
   source = readKernelFile("Sigmoid.cl");
-  backwardsSource = readKernelFile("Sigmoid_back.cl");
+  backwardsWeightSource = readKernelFile("Sigmoid_back_W.cl");
+  backwardsInputSource = readKernelFile("Sigmoid_back_X.cl");
   name = "Sigmoid";
-  backwardsSource = "Sigmoid_back";
+  backwardsWeightSource = "Sigmoid_back_W";
+  backwardsInputSource = "Sigmoid_back_X";
   launchConfig[0] = batch;
   launchConfig[1] = in;
-  backwardsLaunchConfig[0] = batch;
 }
 
 Sigmoid::~Sigmoid() {}
@@ -24,5 +25,9 @@ void Sigmoid::setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
   kernel.setArg(4, out_features);
 }
 
-void Sigmoid::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
-                                    cl::Context ctx){};
+void Sigmoid::setBackwardsWeightKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                               cl::Context ctx){};
+void Sigmoid::setBackwardsInputKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                               cl::Context ctx){};
+
+

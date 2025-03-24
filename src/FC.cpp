@@ -5,12 +5,13 @@ FC::FC(int in, int out, int batch, bool randomize) {
   out_features = out;
   batch_size = batch;
   source = readKernelFile("FC.cl");
-  backwardsSource = readKernelFile("FC_back.cl");
+  backwardsWeightSource = readKernelFile("FC_back_W.cl");
+  backwardsInputSource = readKernelFile("FC_back_X.cl");
   name = "FC";
-  backwardsName = "FC_back";
+  backwardsWeightName = "FC_back_W";
+  backwardsInputName = "FC_back_X";
   launchConfig[0] = batch;
   launchConfig[1] = out;
-  backwardsLaunchConfig[0] = batch;
   for (int i = 0; i < in * out; i++) {
     if (randomize)
       W.push_back((float)rand() / (float)RAND_MAX);
@@ -38,8 +39,12 @@ void FC::setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
   kernel.setArg(5, out_features);
 }
 
-void FC::setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+void FC::setBackwardsWeightKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
                                cl::Context ctx){};
+
+void FC::setBackwardsInputKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                               cl::Context ctx){};
+
 
 std::ostream &operator<<(std::ostream &os, const FC &fc) {
   os << "Fully Connected Layer (" << fc.in_features << " X " << fc.out_features

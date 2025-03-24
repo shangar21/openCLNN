@@ -8,6 +8,8 @@ public:
   ~MSE();
   void setKernelArg(cl::Buffer &X_buf, cl::Context ctx,
                     const cl::Buffer &Y_buf) override;
-  void setBackwardsKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
-                             cl::Context ctx) override;
+  void setBackwardsWeightKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                                   cl::Context ctx) override;
+  void setBackwardsInputKernelArg(cl::Buffer &dLoss_buf, cl::Buffer &dX_buf,
+                                  cl::Context ctx) override;
 };
