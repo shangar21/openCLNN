@@ -21,7 +21,7 @@ public:
   cl::Buffer dX_buf;
   cl::Program program;
   size_t launchConfig[2] = {0, 0};
-	size_t backwardsLaunchConfig[2] = {0, 0};
+  size_t backwardsLaunchConfig[2] = {0, 0};
 
   virtual ~Layer() = default;
   virtual void setKernelArg(cl::Buffer &X_buf, cl::Context ctx,

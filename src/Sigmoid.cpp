@@ -10,7 +10,7 @@ Sigmoid::Sigmoid(int in, int batch) {
   backwardsSource = "Sigmoid_back";
   launchConfig[0] = batch;
   launchConfig[1] = in;
-	backwardsLaunchConfig[0] = batch;
+  backwardsLaunchConfig[0] = batch;
 }
 
 Sigmoid::~Sigmoid() {}

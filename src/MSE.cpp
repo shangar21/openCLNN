@@ -10,7 +10,7 @@ MSE::MSE(int in, int batch) {
   backwardsName = "MSE_back";
   launchConfig[0] = batch;
   launchConfig[1] = 1;
-	backwardsLaunchConfig[0] = batch;
+  backwardsLaunchConfig[0] = batch;
 }
 
 MSE::~MSE() {}

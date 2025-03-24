@@ -10,7 +10,7 @@ FC::FC(int in, int out, int batch, bool randomize) {
   backwardsName = "FC_back";
   launchConfig[0] = batch;
   launchConfig[1] = out;
-	backwardsLaunchConfig[0] = batch;
+  backwardsLaunchConfig[0] = batch;
   for (int i = 0; i < in * out; i++) {
     if (randomize)
       W.push_back((float)rand() / (float)RAND_MAX);

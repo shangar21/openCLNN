@@ -6,6 +6,6 @@
 class Optimizer {
 public:
   Module &module;
-	Optimizer(Module &m) : module(m) {};
+  Optimizer(Module &m) : module(m){};
   virtual void step() = 0;
 };

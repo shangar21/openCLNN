@@ -8,11 +8,11 @@
 class Module {
 
 public:
-	cl::Platform platform;
-	cl::Device device;
-	cl::Context context;
-	cl::CommandQueue queue;
-	cl::Buffer Y_buf;
+  cl::Platform platform;
+  cl::Device device;
+  cl::Context context;
+  cl::CommandQueue queue;
+  cl::Buffer Y_buf;
   std::vector<float> Y;
   std::vector<float> lossVals;
 

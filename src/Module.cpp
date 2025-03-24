@@ -86,9 +86,9 @@ void Module::backwards() {
     std::shared_ptr<Layer> layer = *it;
     layer->getKernel(context, platform, device, true);
     layer->setBackwardsKernelArg(dLoss_buf, dX_buf, context);
-    queue.enqueueNDRangeKernel(
-        layer->kernel, cl::NullRange,
-        cl::NDRange(layer->backwardsLaunchConfig[0], layer->backwardsLaunchConfig[1]));
+    queue.enqueueNDRangeKernel(layer->kernel, cl::NullRange,
+                               cl::NDRange(layer->backwardsLaunchConfig[0],
+                                           layer->backwardsLaunchConfig[1]));
     queue.finish();
     if (dLoss_buf != layer->dY_buf)
       dLoss_buf = layer->dY_buf;
