@@ -62,7 +62,7 @@ void Module::loss(std::vector<float> gts) {
   queue.enqueueNDRangeKernel(lossFunction->kernel, cl::NullRange,
                              cl::NDRange(lossFunction->launchConfig[0],
                                          lossFunction->launchConfig[1]));
-  int outSize = lossFunction->batch_size;
+  int outSize = lossFunction->batch_size * lossFunction->out_features;
   lossVals.clear();
   lossVals.resize(outSize);
   queue.enqueueReadBuffer(lossFunction->Y_buf, CL_TRUE, 0,
